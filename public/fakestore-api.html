@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FakeStore - API</title>
+    <link rel="stylesheet" href="../node_modules/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.css">
+    <script>
+        var selectedProductId;
+        function bodyload() {
+            fetch("https://fakestoreapi.com/products/categories")
+                .then(function (responce) {
+                    return responce.json();
+                })
+                .then(function (data) {
+                    data.unshift("select a category");
+                    for (var category of data) {
+                        var option = document.createElement("option");
+                        option.innerHTML = category;
+                        option.text = category.toUpperCase();
+                        option.value = category;
+                        document.getElementById("categorySelect").appendChild(option);
+                    }
+                })
+        }
+        function categorySelected() {
+            var selectedCategory = document.getElementById("categorySelect").value;
+            fetch(`https://fakestoreapi.com/products/category/${selectedCategory}`)
+                .then(function (responce) {
+                    return responce.json();
+                })
+                .then(function (data) {
+                    document.getElementById("allProducts").innerHTML = "";
+                    for (var product of data) {
+                        var div = document.createElement("div");
+                        div.className = "card";
+                        div.style.width = "260px";
+                        div.style.margin = "10px"
+                        div.innerHTML = `
+                            <div class="card-header">
+                                <img src="${product.image}" height="200" width="200" class="card-img-top">
+                            </div>
+                            <div class="card-body">
+                                <p>&#x20B9; ${product.price}</p>
+                                <p>${product.title}</p>
+                            </div>
+                            <div class="card-footer">
+                                <button class="btn btn-warning w-100" onclick="addClick(${product.id})">Add to Cart</button>
+                            </div>
+                    `;
+                        document.getElementById("allProducts").appendChild(div);
+                    }
+                })
+        }
+        var count = 0;
+        function addClick(productId) {
+            alert("Item added to cart");
+            count++;
+            document.getElementById("cartCount").innerHTML = count;
+            var selectedCategory = document.getElementById("categorySelect").value;
+            selectedProductId = productId;
+        }
+
+        function showCartItems() {
+            fetch(`https://fakestoreapi.com/products/${selectedProductId}`)
+                .then(function (responce) {
+                    return responce.json();
+                })
+                .then(function (data) {
+                    var tr = document.createElement("tr");
+                    var tdName = document.createElement("td");
+                    tdName.innerHTML = data.title;
+                    tr.appendChild(tdName);
+                    var tdPrice = document.createElement("td");
+                    tdPrice.innerHTML = `&#x20B9; ${data.price}`;
+                    tr.appendChild(tdPrice);
+
+                    var tdPhoto = document.createElement("td");
+                    var img = document.createElement("img");
+                    img.src = data.image;
+                    img.height = "100";
+                    img.width = "100";
+                    tdPhoto.appendChild(img);
+                    tr.appendChild(tdPhoto);
+
+                    document.getElementById("tableContent").appendChild(tr);
+                })
+        }
+    </script>
+</head>
+
+<body class="container-fluid" onload="bodyload()">
+    <header>
+        <h2 class="text-bg-dark text-center p-2">FakeStore - API</h2>
+    </header>
+    <div class="row mt-3">
+        <div class="col-3">
+            <h2 class="text-center text-primary">CATEGORIES</h2>
+            <select id="categorySelect" class="form-select" onchange="categorySelected()">
+
+            </select>
+        </div>
+        <div class="col-7" style="height: 650px; overflow: auto;">
+            <div id="allProducts" class="d-flex flex-wrap justify-content-start">
+
+            </div>
+        </div>
+        <div class="col-2 mt-5">
+            <button class="btn btn-warning w-100" data-bs-target="#modalContainer" data-bs-toggle="modal"
+                onclick="showCartItems()"> <span class="bi bi-cart4"></span> Your Cart Items
+                [<span id="cartCount">0</span>]</button>
+        </div>
+    </div>
+    <div class="modal fade" id="modalContainer">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="text-primary">Your Cart Details</h2>
+                    <button class="btn btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table">
+                        <thead>
+                            <th>Product Name</th>
+                            <th>Price</th>
+                            <th>Preview</th>
+                        </thead>
+                        <tbody id="tableContent">
+
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" data-bs-dismiss="modal">Get Bill</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Ok</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../node_modules/jquery/dist/jquery.js"></script>
+    <script src="../node_modules/bootstrap/dist/js/bootstrap.bundle.js"></script>
+</body>
+
+</html>
